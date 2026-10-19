@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Options Lab · Option pricing simulator</title>
+    <meta
+      name="description"
+      content="Price options with Black-Scholes, binomial trees and Monte Carlo side by side. Greeks, implied volatility and a multi-leg strategy builder, all in the browser."
+    />
+    <meta name="theme-color" content="#0b0d0f" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=Geist+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">∂V</span>
+        <div>
+          <h1 class="brand__name">Options Lab</h1>
+          <p class="brand__sub">Option pricing simulator</p>
+        </div>
+      </div>
+      <nav class="topnav" aria-label="Sections">
+        <a href="#pricer">Pricer</a>
+        <a href="#montecarlo">Monte Carlo</a>
+        <a href="#strategies">Strategies</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- ================= PRICER ================= -->
+      <section class="section" id="pricer" aria-labelledby="pricer-title">
+        <div class="section__head">
+          <h2 id="pricer-title">Price an option three ways</h2>
+          <p>
+            Move any input and every model reprices instantly. Black-Scholes is exact for European options,
+            the binomial tree also handles early exercise, and Monte Carlo estimates the price by simulating
+            the stock.
+          </p>
+        </div>
+
+        <div class="pricer">
+          <form class="panel inputs" data-inputs aria-label="Option inputs">
+            <div class="segmented" role="radiogroup" aria-label="Option type">
+              <label><input type="radio" name="type" value="call" checked /><span>Call</span></label>
+              <label><input type="radio" name="type" value="put" /><span>Put</span></label>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Exercise style">
+              <label><input type="radio" name="style" value="european" checked /><span>European</span></label>
+              <label><input type="radio" name="style" value="american" /><span>American</span></label>
+            </div>
+
+            <div class="sliders" data-sliders></div>
+
+            <details class="advanced">
+              <summary>Model settings</summary>
+              <label class="field">
+                <span>Binomial steps</span>
+                <input type="number" name="steps" min="10" max="2000" step="10" value="500" />
+              </label>
+              <label class="field">
+                <span>Monte Carlo paths</span>
+                <select name="paths">
+                  <option value="20000">20,000</option>
+                  <option value="100000" selected>100,000</option>
+                  <option value="500000">500,000</option>
+                  <option value="2000000">2,000,000</option>
+                </select>
+              </label>
+            </details>
+          </form>
+
+          <div class="results">
+            <div class="models">
+              <article class="panel model" aria-labelledby="m-bs">
+                <h3 id="m-bs">Black-Scholes</h3>
+                <p class="model__price num" data-out="bs">—</p>
+                <p class="model__note" data-note="bs">Closed-form</p>
+              </article>
+              <article class="panel model" aria-labelledby="m-bin">
+                <h3 id="m-bin">Binomial tree</h3>
+                <p class="model__price num" data-out="binomial">—</p>
+                <p class="model__note" data-note="binomial">CRR</p>
+              </article>
+              <article class="panel model" aria-labelledby="m-mc">
+                <h3 id="m-mc">Monte Carlo</h3>
+                <p class="model__price num" data-out="mc">—</p>
+                <p class="model__note" data-note="mc">Simulating…</p>
+                <div class="progress" aria-hidden="true">
+                  <div class="progress__bar" data-mc-progress></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="panel greeks" aria-label="Greeks" data-greeks></div>
+
+            <article class="panel chart-panel">
+              <header class="chart-panel__head">
+                <h3>Value vs spot</h3>
+                <div class="chips" role="group" aria-label="Chart metric" data-metric></div>
+              </header>
+              <canvas
+                class="chart chart--tall"
+                data-chart="value"
+                role="img"
+                aria-label="Option value against spot price"
+              ></canvas>
+              <p class="legend">
+                <span class="legend__item legend__item--accent">Today</span>
+                <span class="legend__item legend__item--dash">At expiry</span>
+                <span class="legend__item legend__item--muted">Current spot</span>
+              </p>
+            </article>
+
+            <form class="panel iv" data-iv>
+              <div>
+                <h3>Implied volatility</h3>
+                <p class="iv__help">Enter a market price to find the volatility it implies.</p>
+              </div>
+              <label class="field field--inline">
+                <span>Market price</span>
+                <input name="marketPrice" inputmode="decimal" autocomplete="off" />
+              </label>
+              <p class="iv__result num" data-iv-result aria-live="polite">—</p>
+              <button class="btn" type="submit" data-iv-apply disabled>Use this volatility</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MONTE CARLO ================= -->
+      <section class="section" id="montecarlo" aria-labelledby="mc-title">
+        <div class="section__head">
+          <h2 id="mc-title">Inside the Monte Carlo</h2>
+          <p>
+            The stock follows geometric Brownian motion under the risk-neutral measure. Each path ends
+            somewhere; the option's price is the discounted average payoff over all of them. More paths,
+            tighter confidence interval.
+          </p>
+        </div>
+        <div class="mc-grid">
+          <article class="panel chart-panel">
+            <header class="chart-panel__head">
+              <h3>Simulated price paths</h3>
+              <button class="btn btn--sm" type="button" data-resimulate>New paths</button>
+            </header>
+            <canvas
+              class="chart chart--tall"
+              data-chart="paths"
+              role="img"
+              aria-label="Simulated stock price paths with terminal distribution"
+            ></canvas>
+            <p class="legend">
+              <span class="legend__item legend__item--accent">Finishes in the money</span>
+              <span class="legend__item legend__item--muted">Finishes out of the money</span>
+              <span class="legend__item legend__item--dash">Strike</span>
+            </p>
+          </article>
+          <article class="panel chart-panel">
+            <header class="chart-panel__head">
+              <h3>Convergence</h3>
+              <div class="chips" role="group" aria-label="Convergence view" data-convergence></div>
+            </header>
+            <canvas
+              class="chart chart--tall"
+              data-chart="convergence"
+              role="img"
+              aria-label="Estimate converging to the Black-Scholes price"
+            ></canvas>
+            <p class="legend" data-convergence-legend></p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ================= STRATEGIES ================= -->
+      <section class="section" id="strategies" aria-labelledby="strat-title">
+        <div class="section__head">
+          <h2 id="strat-title">Build a strategy</h2>
+          <p>
+            Combine options and stock. Legs are priced at Black-Scholes fair value using the inputs above, and
+            breakevens and maximum profit or loss are solved exactly from the payoff's kinks.
+          </p>
+        </div>
+
+        <div class="chips chips--presets" role="group" aria-label="Strategy presets" data-presets></div>
+
+        <div class="strategy">
+          <div class="panel legs-panel">
+            <div class="legs-scroll">
+              <table class="legs">
+                <thead>
+                  <tr>
+                    <th scope="col">Side</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">Instrument</th>
+                    <th scope="col">Strike</th>
+                    <th scope="col" class="num">Premium</th>
+                    <th scope="col"><span class="sr-only">Remove</span></th>
+                  </tr>
+                </thead>
+                <tbody data-legs></tbody>
+              </table>
+            </div>
+            <button class="btn btn--sm legs__add" type="button" data-add-leg>+ Add leg</button>
+            <dl class="summary" data-summary></dl>
+          </div>
+
+          <article class="panel chart-panel">
+            <header class="chart-panel__head">
+              <h3>Profit and loss</h3>
+              <span class="chart-panel__meta" data-strategy-name></span>
+            </header>
+            <canvas
+              class="chart chart--tall"
+              data-chart="strategy"
+              role="img"
+              aria-label="Strategy profit and loss against stock price"
+            ></canvas>
+            <p class="legend">
+              <span class="legend__item legend__item--accent">At expiry</span>
+              <span class="legend__item legend__item--dash">Today</span>
+              <span class="legend__item legend__item--muted">Breakeven</span>
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Built by Remigiusz Wisniewski with vanilla JavaScript, Canvas, Web Workers and GSAP.</span>
+      <span>Educational model. Not investment advice.</span>
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
