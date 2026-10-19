@@ -134,7 +134,7 @@ export function createMonteCarloView({ root, pricerRoot, state, reducedMotion })
       const w = (count / max) * histW * reveal.progress;
       const mid = priceLo + binH / 2;
       const itm = p.type === "call" ? mid > p.K : mid < p.K;
-      ctx.fillStyle = itm ? css("--accent-soft") : "rgba(138, 135, 127, 0.18)";
+      ctx.fillStyle = itm ? css("--accent-soft") : css("--otm-soft");
       ctx.fillRect(plotRight + 10, top, w, h);
     });
 

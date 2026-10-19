@@ -8,12 +8,12 @@
       name="description"
       content="Price options with Black-Scholes, binomial trees and Monte Carlo side by side. Greeks, implied volatility and a multi-leg strategy builder, all in the browser."
     />
-    <meta name="theme-color" content="#0b0d0f" />
+    <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=Geist+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./src/styles/main.css" />
@@ -21,18 +21,22 @@
   <body>
     <header class="topbar">
       <div class="brand">
-        <span class="brand__mark" aria-hidden="true">∂V</span>
-        <div>
-          <h1 class="brand__name">Options Lab</h1>
-          <p class="brand__sub">Option pricing simulator</p>
-        </div>
+        <span class="brand__mark" aria-hidden="true">OVME</span>
+        <h1 class="brand__name">Options Lab</h1>
+        <p class="brand__sub">Option valuation · Monte Carlo · Strategy analysis</p>
       </div>
       <nav class="topnav" aria-label="Sections">
-        <a href="#pricer">Pricer</a>
-        <a href="#montecarlo">Monte Carlo</a>
-        <a href="#strategies">Strategies</a>
+        <a href="#pricer"><b>1)</b> Pricer</a>
+        <a href="#montecarlo"><b>2)</b> Monte Carlo</a>
+        <a href="#strategies"><b>3)</b> Strategies</a>
       </nav>
+      <p class="clock" aria-label="UTC time"><span data-clock>--:--:--</span> UTC</p>
     </header>
+    <div class="cmdline" aria-live="off">
+      <span class="cmdline__prompt">&gt;</span>
+      <span class="cmdline__text" data-cmdline>OVME</span>
+      <span class="cmdline__go">&lt;GO&gt;</span>
+    </div>
 
     <main>
       <!-- ================= PRICER ================= -->

@@ -54,6 +54,28 @@ const monteCarlo = createMonteCarloView({
 });
 const strategy = createStrategyView({ root: document.querySelector("#strategies"), state });
 
+const cmdline = document.querySelector("[data-cmdline]");
+const clock = document.querySelector("[data-clock]");
+
+/** The terminal-style command line: the option currently being priced. */
+function renderCmdline() {
+  const fixed = (n, d = 2) => Number(n).toFixed(d);
+  cmdline.textContent = [
+    "OVME",
+    `${state.type.toUpperCase()} ${state.style === "american" ? "AMER" : "EURO"}`,
+    `S ${fixed(state.S)}`,
+    `K ${fixed(state.K)}`,
+    `T ${state.days}D`,
+    `VOL ${fixed(state.vol)}%`,
+    `R ${fixed(state.rate)}%`,
+    `Q ${fixed(state.div)}%`,
+  ].join("  ");
+}
+
+const tick = () => (clock.textContent = new Date().toISOString().slice(11, 19));
+tick();
+setInterval(tick, 1000);
+
 /** Batch rapid slider movement into one render per animation frame. */
 function schedule() {
   if (frame !== null) return;
@@ -62,9 +84,11 @@ function schedule() {
     pricer.render();
     monteCarlo.update();
     strategy.render();
+    renderCmdline();
   });
 }
 
 pricer.render();
 monteCarlo.update({ animate: true });
 strategy.render();
+renderCmdline();
